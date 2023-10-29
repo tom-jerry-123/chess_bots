@@ -22,7 +22,7 @@ class HumanBotInterface:
 
     def play(self):
         self._print_init_menu()
-        while self._game.get_result() is None:
+        while self._game.get_outcome() is None:
             if self._game.get_turn() == chess.WHITE:
                 move = self._white.get_move(self._game.get_board())
                 self._game.make_move(move)
@@ -31,9 +31,8 @@ class HumanBotInterface:
                 move = self._black.get_move(self._game.get_board())
                 self._game.make_move(move)
                 print(f"*** '{self._black.get_name()}' made move '{move.uci()}' ***")
-            print("*** New Board ***")
             self._game.print_board()
-
+        self._print_result()
 
     def _print_init_menu(self):
         player = "WHITE" if self._human else "BLACK"
@@ -41,3 +40,14 @@ class HumanBotInterface:
         print(f"You are playing {player} against bot '{bot_agent.get_name()}'!")
         print("*** Starting Position ***")
         self._game.print_board()
+
+    def _print_result(self):
+        outcome = self._game.get_outcome()
+        winner = outcome.winner
+        termination = outcome.termination
+        if winner is None:
+            print(f"Game drawn by {termination}")
+        elif winner == chess.WHITE:
+            print(f"'{self._white.get_name()}' wins!")
+        else:
+            print(f"'{self._black.get_name()}' wins!")

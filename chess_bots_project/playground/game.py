@@ -10,17 +10,11 @@ class ChessGame:
     Attributes
     name (str) = name of chess game
     _board (chess.Board) = Represents chess board for given game
-    _white (agent) = agent representing white (human or bot)
-    _black (agent) = agent representing black (human or bot)
     """
-    WHITE_WIN = 1
-    DRAW = 0
-    BLACK_WIN = -1
 
     def __init__(self):
         self.name = "Unnamed Chess Game"
         self._board = chess.Board()
-        self._result = None # MIGHT NOT USE THIS. May instead use python-chess game result methods
 
     '''
     OUTPUT FUNCTIONS
@@ -39,8 +33,8 @@ class ChessGame:
     def get_legal_moves(self):
         return list(self._board.legal_moves)
 
-    def get_result(self):
-        return self._result
+    def get_outcome(self):
+        return self._board.outcome()
 
     # Returns a read-only version of the current board
     def get_board(self):
@@ -59,21 +53,21 @@ class ChessGame:
     '''
 
     # Current player resigns. Is not currently implemented
-    def resign(self):
-        if self._result is not None:
-            print("Game already ended. Can't resign now. Reset board for a new game first.")
-            return
-        if self._board.turn == chess.WHITE:
-            self._result = self.BLACK_WIN
-        else:
-            self._result = self.WHITE_WIN
-
-    # Draws the game. This is not currently implemented
-    def draw(self):
-        if self._result is not None:
-            print("Game already ended. Can't draw now. Reset board for a new game first.")
-            return
-        self._result = self.DRAW
+    # def resign(self):
+    #     if self._result is not None:
+    #         print("Game already ended. Can't resign now. Reset board for a new game first.")
+    #         return
+    #     if self._board.turn == chess.WHITE:
+    #         self._result = self.BLACK_WIN
+    #     else:
+    #         self._result = self.WHITE_WIN
+    #
+    # # Draws the game. This is not currently implemented
+    # def draw(self):
+    #     if self._result is not None:
+    #         print("Game already ended. Can't draw now. Reset board for a new game first.")
+    #         return
+    #     self._result = self.DRAW
 
     # makes a move from chess.Move object.
     def make_move(self, move, check_validity=False):

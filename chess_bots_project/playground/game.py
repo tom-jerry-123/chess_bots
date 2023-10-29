@@ -2,6 +2,7 @@
 Class representing chess game.
 """
 import chess
+from .read_only_board import ReadOnlyBoard
 
 
 class ChessGame:
@@ -40,6 +41,10 @@ class ChessGame:
 
     def get_result(self):
         return self._result
+
+    # Returns a read-only version of the current board
+    def get_board(self):
+        return ReadOnlyBoard(self._board)
 
     '''
     BOARD STATE INQUIRY METHODS
@@ -83,6 +88,7 @@ class ChessGame:
 
     '''
     HELPER FUNCTIONS
+    These will probably not get used as they are no longer useful
     '''
 
     # check if string given (in UCI or SAN) is a legal move (and not null). If it is, return chess.Move object for move

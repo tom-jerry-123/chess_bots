@@ -14,8 +14,9 @@ import chess
 
 # Interface for Agents
 class Agent:
-    def __init__(self):
+    def __init__(self, name=""):
         self._latest_move = chess.Move.null()
+        self._name = name
     """
     Description
     Gets the agent's next move given the current position
@@ -25,3 +26,6 @@ class Agent:
     @abstractmethod
     def get_move(self, board_str):
         pass
+
+    def get_name(self):
+        return self._name

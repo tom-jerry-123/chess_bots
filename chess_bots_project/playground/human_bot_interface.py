@@ -1,7 +1,7 @@
 
 
-from chess_bot_repo.chess_bots_project.agents.human_agent import HumanAgent
-from chess_bot_repo.chess_bots_project.agents.random_bot import RandomBot
+from agents.human_agent import HumanAgent
+from agents.random_bot import (RandomBot)
 from .game import ChessGame
 import chess
 import sys

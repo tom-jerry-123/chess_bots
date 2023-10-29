@@ -1,9 +1,9 @@
 # Bot that plays randomly. For testing purposes
 
-from ..agents import Agent
+from agents import Agent
 import chess
 import random
-from chess_bot_repo.chess_bots_project.playground.read_only_board import ReadOnlyBoard
+from playground.read_only_board import ReadOnlyBoard
 
 
 class RandomBot(Agent):

@@ -2,10 +2,10 @@
 Object representing human agent
 """
 
-from ..agents import Agent
+from agents import Agent
 import sys
 import chess
-from chess_bot_repo.chess_bots_project.playground.read_only_board import *
+from playground.read_only_board import ReadOnlyBoard, MoveStatus
 
 
 class HumanAgent(Agent):

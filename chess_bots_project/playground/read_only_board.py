@@ -5,6 +5,10 @@ from enum import Enum, auto
 
 
 class MoveStatus(Enum):
+    """
+    MoveStatus
+    Used to encapsulate validity of move string (and also what notation it is in)
+    """
     UNKNOWN = auto()
     SAN = auto()
     UCI = auto()
@@ -15,14 +19,37 @@ class MoveStatus(Enum):
 
 
 class ReadOnlyBoard:
+    """
+    Read-Only version of chess.Board
+    A wrapper for the actual game board with read-only access. Pass this wrapper of actual game board
+    to agents that need board position. Ensures they won't change actual game board.
+
+    Attribute(s)
+    board (chess.Board) : (private) member element representing the chess board
+
+    Methods
+    (bool)          get_turn            : returns whose turn it is
+    (legal_moves)   get_legal_moves     : returns the set of legal moves (not as a list)
+    (chess.Board)   get_deep_copy       : makes a copy of the board
+    (None)          print_board         : prints current position
+    (MoveStatus)    check_move_validity : returns validity of move string in form of MoveStatus object
+    (chess.Move)    parse_san           : calls parse_san on the underlying board. Does NOT check move validity
+    (chess.Move)    parse_uci           : calls parse_uci on the underlying board. Does NOT check move validity
+    """
     def __init__(self, board=chess.Board()):
         self._board = board
 
     def get_turn(self):
         return self._board.turn
 
+    # WARNING: this function returns legal_moves object, not a list
     def get_legal_moves(self):
         return self._board.legal_moves
+
+    # Call this function to get copy of board.
+    # Only do this when board needs to be manipulated or passed to engine
+    def get_deep_copy(self):
+        pass
 
     def print_board(self):
         print("*** Board ***")

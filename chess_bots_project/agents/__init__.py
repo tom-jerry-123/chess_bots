@@ -24,7 +24,7 @@ class Agent:
     _board (chess.Board) = chess board of the current position. Should NOT be altered by program
     """
     @abstractmethod
-    def get_move(self, board_str):
+    def get_move(self, board: chess.Board):
         pass
 
     def get_name(self):

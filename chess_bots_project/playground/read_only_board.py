@@ -30,7 +30,7 @@ class ReadOnlyBoard:
     Methods
     (bool)          get_turn            : returns whose turn it is
     (legal_moves)   get_legal_moves     : returns the set of legal moves (not as a list)
-    (chess.Board)   get_deep_copy       : makes a copy of the board
+    (chess.Board)   get_copy            : returns a copy of the board
     (None)          print_board         : prints current position
     (MoveStatus)    check_move_validity : returns validity of move string in form of MoveStatus object
     (chess.Move)    parse_san           : calls parse_san on the underlying board. Does NOT check move validity
@@ -48,8 +48,8 @@ class ReadOnlyBoard:
 
     # Call this function to get copy of board.
     # Only do this when board needs to be manipulated or passed to engine
-    def get_deep_copy(self):
-        pass
+    def get_copy(self):
+        return self._board.copy()
 
     def print_board(self):
         print("*** Board ***")

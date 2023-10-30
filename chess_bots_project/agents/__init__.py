@@ -17,14 +17,15 @@ class Agent:
     def __init__(self, name=""):
         self._latest_move = chess.Move.null()
         self._name = name
+
     """
     Description
     Gets the agent's next move given the current position
     Args
-    _board (chess.Board) = chess board of the current position. Should NOT be altered by program
+    board (ReadOnlyBoard) = chess board of the current position. Should NOT be altered by program
     """
     @abstractmethod
-    def get_move(self, board: chess.Board):
+    def get_move(self, read_only_board):
         pass
 
     def get_name(self):

@@ -2,6 +2,7 @@
 
 from agents.human_agent import HumanAgent
 from agents.random_bot import (RandomBot)
+from agents.stockfish import StockfishBot
 from .game import ChessGame
 import chess
 import sys
@@ -13,11 +14,12 @@ class HumanBotInterface:
         self._human = human
         self._white = None
         self._black = None
+        self._bot = StockfishBot() if bot == "stockfish" else RandomBot()
         if human == chess.WHITE:
             self._white = HumanAgent()
-            self._black = RandomBot()
+            self._black = self._bot
         else:
-            self._white = RandomBot()
+            self._white = self._bot
             self._black = HumanAgent()
 
     def play(self):

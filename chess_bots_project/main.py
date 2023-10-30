@@ -9,6 +9,6 @@ from playground.human_bot_interface import HumanBotInterface
 if __name__ != "__main__":
     sys.exit()
 
-my_interface = HumanBotInterface()
+my_interface = HumanBotInterface(bot="stockfish")
 
 my_interface.play()

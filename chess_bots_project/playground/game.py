@@ -12,9 +12,13 @@ class ChessGame:
     _board (chess.Board) = Represents chess board for given game
     """
 
-    def __init__(self):
+    START_POS_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+
+    def __init__(self, fen=None):
         self.name = "Unnamed Chess Game"
-        self._board = chess.Board()
+        if fen is None:
+            fen = self.START_POS_FEN
+        self._board = chess.Board(fen)
 
     '''
     OUTPUT FUNCTIONS

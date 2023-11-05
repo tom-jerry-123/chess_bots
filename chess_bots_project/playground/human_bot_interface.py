@@ -3,18 +3,23 @@
 from agents.human_agent import HumanAgent
 from agents.random_bot import (RandomBot)
 from agents.stockfish import StockfishBot
+from agents.minimax_bot import MinimaxBot
 from .game import ChessGame
 import chess
 import sys
 
 
 class HumanBotInterface:
-    def __init__(self, human=chess.WHITE, bot="random"):
-        self._game = ChessGame()
+    def __init__(self, fen=None, human=chess.WHITE, bot="random"):
+        self._game = ChessGame(fen)
         self._human = human
         self._white = None
         self._black = None
-        self._bot = StockfishBot() if bot == "stockfish" else RandomBot()
+        self._bot = RandomBot()
+        if bot == "stockfish":
+            self._bot = StockfishBot()
+        elif bot == "minimax" or bot == "conventional":
+            self._bot = MinimaxBot()
         if human == chess.WHITE:
             self._white = HumanAgent()
             self._black = self._bot

@@ -39,6 +39,10 @@ class ReadOnlyBoard:
     def __init__(self, board=chess.Board()):
         self._board = board
 
+    """
+    chess.Board methods (does exactly the same thing as the chess.Board method of same name)
+    """
+
     def get_turn(self):
         return self._board.turn
 
@@ -51,6 +55,9 @@ class ReadOnlyBoard:
     def get_copy(self):
         return self._board.copy()
 
+    """
+    Other Methods
+    """
     def print_board(self):
         print("*** Board ***")
         print(self._board)

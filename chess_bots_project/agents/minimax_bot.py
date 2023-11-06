@@ -16,7 +16,7 @@ class MinimaxBot(Agent):
     """
     def __init__(self, name="conventional_bot"):
         super().__init__(name)
-        self._num_pos_searched = 0
+        self._num_pos_searched = 0  # number of 'terminating' (i.e. we return static eval) positions searched.
         self._opp_pawn_attacks = None
 
     def get_move(self, read_only_board: ReadOnlyBoard):
@@ -42,7 +42,7 @@ class MinimaxBot(Agent):
                     best_eval = evaluation
                     best_move = move
         # Print num pos searched
-        print(f"*** '{self.get_name()}' searched through {self._num_pos_searched} positions. Best eval: {best_eval}. ***")
+        print(f"*** '{self.get_name()}' searched through {self._num_pos_searched} 'ending' positions. Best eval: {best_eval}. ***")
         # Print time taken
         duration = default_timer() - start_time
         print(f"### SYS INFO: time taken for move generation: {duration} ###")
@@ -54,14 +54,13 @@ class MinimaxBot(Agent):
     Minimax function
     """
     def _minimax(self, board: chess.Board, depth=5, alpha=-math.inf, beta=math.inf):
-        if depth <= 0:
-            # we hit maximum depth -> return evaluation
-            self._num_pos_searched += 1
-            return eval_func.evaluate(board)
         if board.outcome() is not None:
             # game has ended, evaluate position
             self._num_pos_searched += 1
             return eval_func.evaluate(board)
+        if depth <= 0:
+            # we hit maximum depth -> return evaluation after searching through captures
+            return self._minimax_captures(board)
 
         best_evaluation = -math.inf if board.turn == chess.WHITE else math.inf
         move_lst = self._get_ordered_move_lst(board)
@@ -93,8 +92,50 @@ class MinimaxBot(Agent):
                     # Black to move, so white had a better option from another branch. Prune!
                     break
 
-        self._num_pos_searched += 1
         return best_evaluation
+
+    # minimax function, but only searches capture sequences.
+    def _minimax_captures(self, board: chess.Board, depth=20, alpha=-math.inf, beta=math.inf):
+        # Hit max depth or game ended
+        if depth <= 0 or board.outcome() is not None:
+            self._num_pos_searched += 1
+            return eval_func.evaluate(board)
+
+        capture_lst = self._get_capture_moves(board)
+        # no more captures. Return static evaluation
+        if len(capture_lst) == 0:
+            self._num_pos_searched += 1
+            return eval_func.evaluate(board)
+
+        best_eval = -math.inf if board.turn == chess.WHITE else math.inf
+        if board.turn == chess.WHITE:
+            # White's turn. We want to maximize
+            for move in capture_lst:
+                # Evaluate move. Make move, evaluate, then unmake
+                board.push(move)
+                evaluation = self._minimax_captures(board, depth=depth-1, alpha=alpha, beta=beta)
+                board.pop()
+                # Check for best evaluation
+                best_eval = max(best_eval, evaluation)
+                alpha = max(alpha, evaluation)
+                if beta <= alpha:
+                    # White to move, so black had a better option from another branch. Prune!
+                    break
+        else:
+            # Black's turn. We want to minimize score
+            for move in capture_lst:
+                board.push(move)
+                evaluation = self._minimax_captures(board, depth=depth-1, alpha=alpha, beta=beta)
+                board.pop()
+                # check for best evaluation
+                best_eval = min(best_eval, evaluation)
+                beta = min(beta, evaluation)
+                if beta <= alpha:
+                    # Black to move, so white had a better option from another branch. Prune!
+                    break
+
+        return best_eval
+
 
     """
     Helper Functions
@@ -137,6 +178,6 @@ class MinimaxBot(Agent):
         capture_moves = []
         for move in board.legal_moves:
             # if we made en passant capture or move to a square occupied by enemy piece, we made capture
-            if board.is_en_passant(move) or board.piece_type_at(move.to_square) is not None:
+            if board.is_capture(move):
                 capture_moves.append(move)
         return capture_moves

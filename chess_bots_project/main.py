@@ -11,6 +11,6 @@ import playground.special_positions as fens
 if __name__ != "__main__":
     sys.exit()
 
-my_interface = BotInterface(fens.TEST1)
+my_interface = BotInterface()
 
 my_interface.play(max_ply=4)

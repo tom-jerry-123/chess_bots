@@ -4,11 +4,13 @@
 
 import sys
 from playground.human_bot_interface import HumanBotInterface
+from playground.bot_interface import BotInterface
+import playground.special_positions as fens
 
 
 if __name__ != "__main__":
     sys.exit()
 
-my_interface = HumanBotInterface(fen="8/4k3/5r2/8/8/4BB2/4K3/8 w - - 0 1", human=False, bot="minimax")
+my_interface = BotInterface(fens.TEST1)
 
-my_interface.play()
+my_interface.play(max_ply=4)

@@ -23,16 +23,17 @@ def evaluate(position: chess.Board):
         return 1000 if position.turn == chess.BLACK else -1000
     elif position.is_stalemate():
         return 0
-    elif position.is_insufficient_material():
-        return 0
+
     # Else:
     material = 0
-    for square in chess.SQUARES:
-        piece = position.piece_at(square)
-        if piece is not None:
-            piece_value = PIECE_VALUES[piece.piece_type]
-            if piece.color == chess.WHITE:
-                material += piece_value
-            else:
-                material -= piece_value
+    material += PIECE_VALUES[chess.PAWN] * len(position.pieces(chess.PAWN, chess.WHITE))
+    material += PIECE_VALUES[chess.KNIGHT] * len(position.pieces(chess.KNIGHT, chess.WHITE))
+    material += PIECE_VALUES[chess.BISHOP] * len(position.pieces(chess.BISHOP, chess.WHITE))
+    material += PIECE_VALUES[chess.ROOK] * len(position.pieces(chess.ROOK, chess.WHITE))
+    material += PIECE_VALUES[chess.QUEEN] * len(position.pieces(chess.QUEEN, chess.WHITE))
+    material -= PIECE_VALUES[chess.PAWN] * len(position.pieces(chess.PAWN, chess.BLACK))
+    material -= PIECE_VALUES[chess.KNIGHT] * len(position.pieces(chess.KNIGHT, chess.BLACK))
+    material -= PIECE_VALUES[chess.BISHOP] * len(position.pieces(chess.BISHOP, chess.BLACK))
+    material -= PIECE_VALUES[chess.ROOK] * len(position.pieces(chess.ROOK, chess.BLACK))
+    material -= PIECE_VALUES[chess.QUEEN] * len(position.pieces(chess.QUEEN, chess.BLACK))
     return material

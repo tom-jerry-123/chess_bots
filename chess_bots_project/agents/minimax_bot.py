@@ -5,6 +5,7 @@ from playground.read_only_board import ReadOnlyBoard
 from agents import Agent
 from agents import eval_func
 import math
+from timeit import default_timer
 
 
 class MinimaxBot(Agent):
@@ -13,21 +14,24 @@ class MinimaxBot(Agent):
     minimax(chess.Board, alpha: float, beta: float, depth: int) -> float
     get_o
     """
-    def __init__(self):
-        super().__init__("conventional_bot")
+    def __init__(self, name="conventional_bot"):
+        super().__init__(name)
         self._num_pos_searched = 0
+        self._opp_pawn_attacks = None
 
     def get_move(self, read_only_board: ReadOnlyBoard):
         self._num_pos_searched = 0
+        # Get start time
+        start_time = default_timer()
         position = read_only_board.get_copy()
         bot_color = position.turn
         best_eval = -math.inf if bot_color == chess.WHITE else math.inf
         best_move = chess.Move.null()
-        # move_lst = self._get_ordered_move_lst(position)
-        move_lst = position.legal_moves
+        move_lst = self._get_ordered_move_lst(position)
+        # move_lst = position.legal_moves
         for move in move_lst:
             position.push(move)
-            evaluation = self._minimax(position, depth=5)
+            evaluation = self._minimax(position, depth=4)
             position.pop()
             if bot_color == chess.WHITE:
                 if evaluation > best_eval:
@@ -39,6 +43,9 @@ class MinimaxBot(Agent):
                     best_move = move
         # Print num pos searched
         print(f"*** '{self.get_name()}' searched through {self._num_pos_searched} positions. Best eval: {best_eval}. ***")
+        # Print time taken
+        duration = default_timer() - start_time
+        print(f"### SYS INFO: time taken for move generation: {duration} ###")
         return best_move
 
     # Note: depth refers to number of plies (half-moves) to search.
@@ -57,8 +64,8 @@ class MinimaxBot(Agent):
             return eval_func.evaluate(board)
 
         best_evaluation = -math.inf if board.turn == chess.WHITE else math.inf
-        # move_lst = self._get_ordered_move_lst(board)
-        move_lst = board.legal_moves
+        move_lst = self._get_ordered_move_lst(board)
+        # move_lst = board.legal_moves
         # what we do changes depending on who's turn it is
         if board.turn == chess.WHITE:
             # White's turn. We want to maximize
@@ -94,39 +101,42 @@ class MinimaxBot(Agent):
     """
     def _get_ordered_move_lst(self, board: chess.Board):
         move_score_lst = []
+        # self._compute_opp_pawn_attacks(board)
         for move in board.legal_moves:
             score = self._score_move(board, move)
             move_score_lst.append((move, score))
         move_score_lst.sort(key=lambda x: x[1], reverse=True)
-        ret_lst = []
-        for tup in move_score_lst:
-            ret_lst.append(tup[0])
-        return ret_lst
+        return [tup[0] for tup in move_score_lst]
 
     def _score_move(self, board: chess.Board, move: chess.Move):
         score = 0.0
-        start_sqr = move.from_square
-        end_sqr = move.to_square
-        if board.is_capture(move):
-            # prioritize capturing most valuable piece with least valuable piece
-            score += 10 * eval_func.PIECE_VALUES[board.piece_type_at(end_sqr)] - eval_func.PIECE_VALUES[board.piece_type_at(start_sqr)]
+        piece_type_moved = board.piece_type_at(move.from_square)
+        captured_type = board.piece_type_at(move.to_square)
+        if captured_type is not None:
+            # small bug: we actually ignored en passant capture here, but that doesn't matter much
+            score += 10 * eval_func.PIECE_VALUES[captured_type] - eval_func.PIECE_VALUES[piece_type_moved]
         if move.promotion is not None:
             score += eval_func.PIECE_VALUES[move.promotion]
-        if board.gives_check(move):
-            # prioritize checks with less valuable pieces. Divide by 2 b/c checks less important than capture
-            score += (10 - eval_func.PIECE_VALUES[board.piece_type_at(start_sqr)]) / 2
-        if end_sqr in self._opp_pawn_attacks(board):
-            # we penalize moves to squares attacked by enemy pawns
-            score -= eval_func.PIECE_VALUES[board.piece_type_at(start_sqr)]
+        # if move.to_square in self._opp_pawn_attacks:
+        #     # we penalize moves to squares attacked by enemy pawns
+        #     score -= eval_func.PIECE_VALUES[piece_type_moved]
         return score
 
-    @staticmethod
-    def _opp_pawn_attacks(board: chess.Board) -> set:
+    # Currently not used as it is too slow and doesn't help
+    def _compute_opp_pawn_attacks(self, board: chess.Board):
         opp = not board.turn
-        attacked_squares = set()
+        self._opp_pawn_attacks = set()
         for square in chess.SQUARES:
             # Check if any attackers to the square is an opponent pawn
             # Recall that board.attackers() and board.pawns return SquareSet, a bitmask of the 64 squares
             if board.attackers(opp, square) & board.pawns:
-                attacked_squares.add(square)
-        return attacked_squares
+                self._opp_pawn_attacks.add(square)
+
+    # use this to generate capture moves
+    def _get_capture_moves(self, board: chess.Board):
+        capture_moves = []
+        for move in board.legal_moves:
+            # if we made en passant capture or move to a square occupied by enemy piece, we made capture
+            if board.is_en_passant(move) or board.piece_type_at(move.to_square) is not None:
+                capture_moves.append(move)
+        return capture_moves

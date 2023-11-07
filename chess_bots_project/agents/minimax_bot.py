@@ -93,7 +93,6 @@ class MinimaxBot(Agent):
                     # Black to move, so white had a better option from another branch. Prune!
                     break
 
-        self._num_pos_searched += 1
         return best_evaluation
 
     """

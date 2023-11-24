@@ -5,7 +5,7 @@ Pawn = 1, Minor Piece = 3, Rook = 5, Queen = 9, Checkmate = 1000
 """
 
 import chess
-from agents.piece_square_table import PieceSquareTable
+from agents.evaluation.piece_square_table import PieceSquareTable
 
 
 # Stores values of various pieces for calculations
@@ -18,11 +18,13 @@ PIECE_VALUES = {
     chess.KING: 0  # King's value is not relevant for material calculation
 }
 
+CHECKMATE_SCORE = 1000000
+
 
 def evaluate(position: chess.Board):
     # Does not check for fifty-move rule or threefold repetition or insufficient material
     if position.is_checkmate():
-        return 1000000 if position.turn == chess.BLACK else -1000000
+        return CHECKMATE_SCORE if position.turn == chess.BLACK else -CHECKMATE_SCORE
     elif position.is_stalemate():
         return 0
 

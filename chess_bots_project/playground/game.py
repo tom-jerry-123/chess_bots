@@ -3,6 +3,7 @@ Class representing chess game.
 """
 import chess
 from .read_only_board import ReadOnlyBoard
+import chess.pgn
 
 
 class ChessGame:
@@ -43,6 +44,9 @@ class ChessGame:
     # Returns a read-only version of the current board
     def get_board(self):
         return ReadOnlyBoard(self._board)
+
+    def get_pgn(self):
+        return chess.pgn.Game.from_board(self._board)
 
     '''
     BOARD STATE INQUIRY METHODS

@@ -3,7 +3,7 @@
 import chess
 from playground.read_only_board import ReadOnlyBoard
 from agents import Agent
-from agents import eval_func
+from agents.evaluation import eval_func
 import math
 from timeit import default_timer
 
@@ -76,10 +76,10 @@ class MinimaxBot(Agent):
                 board.pop()
                 # Check for best evaluation
                 best_evaluation = max(best_evaluation, evaluation)
-                alpha = max(alpha, evaluation)
-                if beta <= alpha:
+                if best_evaluation >= beta:
                     # White to move, so black had a better option from another branch. Prune!
                     break
+                alpha = max(alpha, evaluation)
         else:
             # Black's turn. We want to minimize score
             for move in move_lst:
@@ -88,10 +88,10 @@ class MinimaxBot(Agent):
                 board.pop()
                 # check for best evaluation
                 best_evaluation = min(best_evaluation, evaluation)
-                beta = min(beta, evaluation)
-                if beta <= alpha:
+                if best_evaluation <= alpha:
                     # Black to move, so white had a better option from another branch. Prune!
                     break
+                beta = min(beta, evaluation)
 
         return best_evaluation
 
@@ -111,6 +111,10 @@ class MinimaxBot(Agent):
         score = 0.0
         piece_type_moved = board.piece_type_at(move.from_square)
         captured_type = board.piece_type_at(move.to_square)
+        # # add position score of destination square
+        # score += abs(PieceSquareTable.read(piece_type_moved, board.turn, move.to_square))
+        # # subtract position score of origin square
+        # score -= abs(PieceSquareTable.read(piece_type_moved, board.turn, move.from_square))
         if captured_type is not None:
             # small bug: we actually ignored en passant capture here, but that doesn't matter much
             score += 10 * eval_func.PIECE_VALUES[captured_type] - eval_func.PIECE_VALUES[piece_type_moved]

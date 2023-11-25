@@ -11,6 +11,6 @@ import playground.special_positions as fens
 if __name__ != "__main__":
     sys.exit()
 
-my_interface = BotInterface()
+my_interface = BotInterface(file_path="play_results/bot_game.pgn")
 
-my_interface.play(max_ply=200)
+my_interface.play(max_ply=30 , write_to_pgn=True)

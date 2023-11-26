@@ -6,7 +6,7 @@ Implementation of Zobrist Hashing
 import random
 
 import chess
-from timeit import default_timer
+# from timeit import default_timer  # Use timer for code runtime profiling
 
 
 class ZobristHash:
@@ -45,7 +45,6 @@ class ZobristHash:
         self._initialize_castling_rights_hash(bitmask | self.CASTLING_SQUARE_MASKS[index], index+1)
 
     def compute_hash(self, board: chess.Board):
-        start = default_timer()
         board_hash = 0
 
         for piece_type in chess.PIECE_TYPES:
@@ -55,13 +54,12 @@ class ZobristHash:
 
         board_hash ^= self._castling_rights_hash[board.castling_rights]
         en_passant_square = board.ep_square
-        if en_passant_square is not None:
+        # Note that en passant square only matters if there is a legal en passant
+        if en_passant_square is not None and board.has_legal_en_passant():
             en_passant_file = chess.square_file(en_passant_square)
             board_hash ^= self._en_passant_file_hash[en_passant_file]
         if board.turn == chess.BLACK:
             board_hash ^= self._black_turn_hash
-
-        self.Duration += default_timer() - start
 
         return board_hash
 
@@ -69,13 +67,15 @@ class ZobristHash:
         # returns the hash int that represent black's turn
         return self._black_turn_hash
 
-    def get_piece_square_hash(self, piece_type, color, square):
+    def get_piece_square_hash(self, piece_type: chess.PieceType, color: chess.Color, square: chess.Square) -> int:
         return self._piece_square_hash[(piece_type, color, square)]
 
-    def get_castling_rights_hash(self, castling_rights):
+    def get_castling_rights_hash(self, castling_rights: chess.Bitboard) -> int:
         return self._castling_rights_hash[castling_rights]
 
-    def get_en_passant_hash(self, ep_square):
+    def get_en_passant_hash(self, ep_square: chess.Square) -> int:
+        # Takes en passant target square, gives the hash for the target file.
+        # Should only call this when legal en passant capture exists.
         if ep_square is None:
             return 0
         file_num = chess.square_file(ep_square)

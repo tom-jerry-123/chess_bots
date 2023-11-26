@@ -1,21 +1,7 @@
 
 
 import chess
-from enum import Enum, auto
-
-
-class MoveStatus(Enum):
-    """
-    MoveStatus
-    Used to encapsulate validity of move string (and also what notation it is in)
-    """
-    UNKNOWN = auto()
-    SAN = auto()
-    UCI = auto()
-    INVALID = auto()
-    ILLEGAL_SAN = auto()
-    AMBIGUOUS_SAN = auto()
-    ILLEGAL_UCI = auto()
+import playground.human_interface_helpers.move_validity as validity
 
 
 class ReadOnlyBoard:
@@ -63,32 +49,13 @@ class ReadOnlyBoard:
         print(self._board)
         print()
 
-    def check_move_validity(self, move_str: str) -> MoveStatus:
-        status = None
-        # first, see if move is valid in SAN
-        try:
-            self._board.parse_san(move_str)
-            print(f"*** Successfully parsed move '{move_str}' ***")
-            status = MoveStatus.SAN
-        except chess.InvalidMoveError:
-            status = MoveStatus.INVALID
-        except chess.IllegalMoveError:
-            status = MoveStatus.ILLEGAL_SAN
-        except chess.AmbiguousMoveError:
-            status = MoveStatus.AMBIGUOUS_SAN
-
-        if status == MoveStatus.INVALID:
-            # check if move is valid in UCI
-            try:
-                self._board.parse_uci(move_str)
-                print(f"*** Successfully parsed move '{move_str}' ***")
-                status = MoveStatus.UCI
-            except chess.InvalidMoveError:
-                status = MoveStatus.INVALID
-            except chess.IllegalMoveError:
-                status = MoveStatus.ILLEGAL_UCI
-
-        return status
+    def check_move_validity(self, move_str: str) -> validity.MoveStatus:
+        """
+        Returns a move status indicating validity of move_str (and error, if any)
+        Simply invokes validity checking function in move_validity module
+        We can afford to clone the board and pass it as this will only be used to process human-input moves
+        """
+        return validity.check_move_validity(self.get_copy(), move_str)
 
     # Accesses parse_san function of board. Should only be used after checking move is valid san
     def parse_san(self, valid_move_str):

@@ -20,15 +20,26 @@ class HashBoard:
             self._hasher = ZobristHash()
         self._position_hash = self._hasher.get_hash(self.get_deep_copy())
 
+    """
+    Getter Methods
+    """
+
     def get_shallow_copy(self):
         """
         !!! WARNING: this returns the actual board, NOT a copy !!!
-        Use at own risk. DO NOT modify board while using it.
+        DO NOT modify board while using it. Use at own risk.
         """
         return self._board
 
     def get_deep_copy(self):
         return self._board.copy()
+
+    def get_position_hash(self):
+        return self._position_hash
+
+    """
+    MOVE-MAKING FUNCTIONS
+    """
 
     def make_move(self, move: chess.Move):
         """
@@ -113,3 +124,13 @@ class HashBoard:
         # redo hash for en passant, if applicable
         if self._board.ep_square is not None:
             self._position_hash ^= self._hasher.get_en_passant_hash(self._board.ep_square)
+
+    """
+    Printing Functions
+    """
+
+    def print_board(self):
+        print("*** Printing Board ***")
+        print(f"* Board Hash: {self.get_position_hash()} *")
+        print(self._board)
+        print()

@@ -5,7 +5,8 @@ Object representing human agent
 from agents import Agent
 import sys
 import chess
-from playground.read_only_board import ReadOnlyBoard, MoveStatus
+from playground.read_only_board import ReadOnlyBoard
+from playground.human_interface_helpers.move_validity import MoveStatus
 
 
 class HumanAgent(Agent):

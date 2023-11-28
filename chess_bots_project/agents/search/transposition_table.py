@@ -4,6 +4,7 @@ Implementation of transposition table
 
 
 import typing
+import chess
 import enum
 
 
@@ -16,6 +17,7 @@ class NodeType(enum.Enum):
 class MinimaxEntry(typing.NamedTuple):
     key: int
     score: float
+    best_move: chess.Move
     node_type: NodeType
     age: int
 
@@ -25,6 +27,9 @@ class TranspositionTable:
         self.table = dict()
         self._hasher = hasher  # hasher is a Zobrist hash object. used to compute hashes
 
-    def add(self, hash_key, score, node_type, move_number):
+    def add(self, hash_key, score, best_move, node_type, move_number):
         # right now, we automatically replace entry when hash collision occurs
-        self.table[hash_key] = MinimaxEntry(hash_key, score, node_type, move_number)
+        self.table[hash_key] = MinimaxEntry(hash_key, score, best_move, node_type, move_number)
+
+    def get(self, hash_key):
+        return self.table.get(hash_key, __default=None)

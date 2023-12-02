@@ -13,7 +13,7 @@ class HashBoard:
     """
 
     """
-    def __init__(self, board=chess.Board(), hasher = None):
+    def __init__(self, board=chess.Board(), hasher=None):
         self._board = board
         self._hasher = hasher
         if hasher is None:
@@ -129,6 +129,19 @@ class HashBoard:
         # redo hash for en passant, if applicable
         if self._board.has_legal_en_passant():
             self._position_hash ^= self._hasher.get_en_passant_hash(self._board.ep_square)
+
+    """
+    Board class functions
+    """
+
+    def turn(self):
+        return self._board.turn
+
+    def outcome(self):
+        return self._board.outcome()
+
+    def ply(self):
+        return self._board.ply()
 
     """
     Printing Functions

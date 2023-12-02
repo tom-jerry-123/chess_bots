@@ -19,6 +19,9 @@ class BotInterface:
     def play(self, max_ply=100, write_to_pgn=False):
         if self._ply_cnt > max_ply:
             print("### ERROR: Played too many plies in game. Reset Game / start new one! ###")
+        whose_turn = self._game.get_turn()
+        print(f"*** Starting Position ({'WHITE' if whose_turn else 'BLACK'} to move)")
+        self._game.print_board()
         while self._game.get_outcome() is None and self._ply_cnt < max_ply:
             if self._game.get_turn() == chess.WHITE:
                 move = self._white.get_move(self._game.get_board())

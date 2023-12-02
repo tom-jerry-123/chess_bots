@@ -12,7 +12,7 @@ if __name__ != "__main__":
     sys.exit()
 
 # Bot vs. Bot
-my_interface = BotInterface(fen=fens.STARTING_FEN, file_path="play_results/bot_game.pgn")
+my_interface = BotInterface(fen=fens.DAILY_PUZZLE_23, file_path="play_results/bot_game.pgn")
 my_interface.play(max_ply=30 , write_to_pgn=True)
 
 # # Human vs. Bot

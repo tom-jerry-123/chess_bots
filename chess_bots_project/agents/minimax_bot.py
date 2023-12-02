@@ -2,10 +2,14 @@
 
 import chess
 from playground.read_only_board import ReadOnlyBoard
+from playground.hash_board import HashBoard
 from agents import Agent
 from agents.evaluation import eval_func
+from agents.search.zobrist_hash import ZobristHash
+from agents.search.transposition_table import TranspositionTable
+from agents.evaluation.piece_square_table import PieceSquareTable
 import math
-from timeit import default_timer
+from timeit import default_timer  # For runtime profiling
 
 
 class MinimaxBot(Agent):
@@ -17,43 +21,60 @@ class MinimaxBot(Agent):
     def __init__(self, name="conventional_bot"):
         super().__init__(name)
         self._num_pos_searched = 0
+        self._zobrist_hasher = ZobristHash()
+        self._transposition_table = TranspositionTable(self._zobrist_hasher)
+        self._cur_transposition_cnt = 0
         self._opp_pawn_attacks = None
 
     def get_move(self, read_only_board: ReadOnlyBoard):
         self._num_pos_searched = 0
+        self._cur_transposition_cnt = 0
         # Get start time
         start_time = default_timer()
         position = read_only_board.get_copy()
-        bot_color = position.turn
-        best_eval = -math.inf if bot_color == chess.WHITE else math.inf
-        best_move = chess.Move.null()
-        move_lst = self._get_ordered_move_lst(position)
-        # move_lst = position.legal_moves
-        for move in move_lst:
-            position.push(move)
-            evaluation = self._minimax(position, depth=4)
-            position.pop()
-            if bot_color == chess.WHITE:
-                if evaluation > best_eval:
-                    best_eval = evaluation
-                    best_move = move
-            else:
-                if evaluation < best_eval:
-                    best_eval = evaluation
-                    best_move = move
+        best_move, best_eval = self._search_for_moves(position, 6)
         # Print num pos searched
-        print(f"*** '{self.get_name()}' searched through {self._num_pos_searched} positions. Best eval: {best_eval}. ***")
+        print(f"***\n'{self.get_name()}' searched through {self._num_pos_searched} positions. Best eval: {best_eval}.")
+        print(f"Encountered {self._cur_transposition_cnt} new transpositions. {self._transposition_table.size()} entries total.")
+        print("***")
         # Print time taken
         duration = default_timer() - start_time
         print(f"### SYS INFO: time taken for move generation: {duration} ###")
+        # For now, we discard the transposition table every time we calculate a move
+        self._transposition_table.clear()
         return best_move
+
+    def _search_for_moves(self, board: chess.Board, search_depth=5) -> (chess.Move, float):
+        if search_depth <= 0:
+            search_depth = 1  # force set depth to at least one so we can
+
+        hash_board = HashBoard(board, self._zobrist_hasher)
+        bot_color = hash_board.turn()
+        best_move = chess.Move.null()
+        # Initialize alpha and beta for the mini / nega max search
+        alpha = -math.inf
+        move_lst = self._get_ordered_move_lst(hash_board.get_shallow_copy())
+        # move_lst = board.legal_moves
+        for move in move_lst:
+            hash_board.make_move(move)
+            # remember to negate result of negamax as good pos for opp is bad for us.
+            # Note: beta=-inf always at the lowest depth
+            evaluation = -self._negamax(hash_board, depth=search_depth-1, alpha=-math.inf, beta=-alpha)
+            hash_board.undo_move()
+            if evaluation > alpha:
+                alpha = evaluation
+                best_move = move
+
+        best_eval = alpha if bot_color else -alpha
+        return (best_move, best_eval)
 
     # Note: depth refers to number of plies (half-moves) to search.
     # By convention, black tries to minimize score; white, maximize
-    """
-    Minimax function
-    """
     def _minimax(self, board: chess.Board, depth=5, alpha=-math.inf, beta=math.inf):
+        """
+        Minimax function (not used anymore)
+        Now, we use negamax instead b/c code is cleaner
+        """
         if depth <= 0:
             # we hit maximum depth -> return evaluation
             self._num_pos_searched += 1
@@ -64,6 +85,7 @@ class MinimaxBot(Agent):
             return eval_func.evaluate(board)
 
         best_evaluation = -math.inf if board.turn == chess.WHITE else math.inf
+        # I tested and found that move ordering makes things faster
         move_lst = self._get_ordered_move_lst(board)
         # move_lst = board.legal_moves
         # what we do changes depending on who's turn it is
@@ -95,6 +117,53 @@ class MinimaxBot(Agent):
 
         return best_evaluation
 
+    # negamax version of minimax algorithm
+    def _negamax(self, hash_board: HashBoard, depth=5, alpha=-math.inf, beta=math.inf):
+        """
+        Negamax version of minimax algorithm
+        Evaluation is now defined to be positive if it is good for current player,
+        so we don't need to check if player is maximizer or minimizer
+        Param:
+        board (chess.Board) : chess board position
+        depth (int)         : positive int representing depth (num ply) left to search
+        alpha (float)       : (positive) score of best eval for current player seen so far
+        beta (float)        : (negative) score of worst eval for current player seen so far
+        """
+
+        pos_hash_key = hash_board.get_position_hash()
+        if self._transposition_table.get(pos_hash_key) is not None:
+            # if we already computed the position in our transposition table, just return
+            return self._transposition_table.table[pos_hash_key].score
+
+        if depth <= 0 or hash_board.outcome() is not None:
+            # we hit maximum depth -> return evaluation
+            perspective = 1 if hash_board.turn() else -1
+            self._num_pos_searched += 1
+            evaluation = perspective * eval_func.evaluate(hash_board.get_shallow_copy())
+            return evaluation
+
+        # I tested and found that move ordering makes things faster
+        move_lst = self._get_ordered_move_lst(hash_board.get_shallow_copy())
+        # move_lst = board.legal_moves
+        for move in move_lst:
+            # Evaluate move. Make move, evaluate, then unmake
+            hash_board.make_move(move)
+            # we need to negate as what's good for opponent is bad for current player
+            evaluation = -self._negamax(hash_board, depth=depth - 1, alpha=-beta, beta=-alpha)
+            hash_board.undo_move()
+            # Check for best evaluation
+            if evaluation >= beta:
+                # Move was too good! Opp will avoid this
+                self._transposition_table.add(pos_hash_key, beta, hash_board.ply())
+                self._cur_transposition_cnt += 1
+                return beta
+            alpha = max(alpha, evaluation)
+
+        # Add position to transposition table before returning. Assumes we already checked position is not in table
+        self._transposition_table.add(pos_hash_key, alpha, hash_board.ply())
+        self._cur_transposition_cnt += 1
+        return alpha
+
     """
     Helper Functions
     """
@@ -111,6 +180,7 @@ class MinimaxBot(Agent):
         score = 0.0
         piece_type_moved = board.piece_type_at(move.from_square)
         captured_type = board.piece_type_at(move.to_square)
+        # Do not add this into the heuristic. Makes search a lot worse
         # # add position score of destination square
         # score += abs(PieceSquareTable.read(piece_type_moved, board.turn, move.to_square))
         # # subtract position score of origin square

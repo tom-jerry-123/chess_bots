@@ -18,6 +18,8 @@ PIECE_VALUES = {
     chess.KING: 0  # King's value is not relevant for material calculation
 }
 
+PAWN_ADVANTAGE = PIECE_VALUES[chess.PAWN]  # a lot of chess stats are measured in terms of pawn advantage
+
 CHECKMATE_SCORE = 1000000
 
 
@@ -30,7 +32,7 @@ def evaluate(position: chess.Board):
 
     score = material_score(position)
     score += piece_position_score(position)
-    return score/100
+    return score/PAWN_ADVANTAGE
 
 
 def evaluate_material(position: chess.Board):
@@ -40,7 +42,7 @@ def evaluate_material(position: chess.Board):
     elif position.is_stalemate():
         return 0
 
-    return material_score(position)//100
+    return material_score(position)//PAWN_ADVANTAGE
 
 
 def material_score(position: chess.Board):

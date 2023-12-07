@@ -8,6 +8,7 @@ from agents.evaluation import eval_func
 from agents.search.zobrist_hash import ZobristHash
 from agents.search.transposition_table import TranspositionTable
 from agents.evaluation.piece_square_table import PieceSquareTable
+from agents.search import move_order
 import math
 from timeit import default_timer  # For runtime profiling
 
@@ -32,7 +33,7 @@ class MinimaxBot(Agent):
         # Get start time
         start_time = default_timer()
         position = read_only_board.get_copy()
-        best_move, best_eval = self._search_for_moves(position, 6)
+        best_move, best_eval = self._search_for_moves(position, 5)
         # Print num pos searched
         print(f"***\n'{self.get_name()}' searched through {self._num_pos_searched} positions. Best eval: {best_eval}.")
         print(f"Encountered {self._cur_transposition_cnt} new transpositions. {self._transposition_table.size()} entries total.")
@@ -172,6 +173,7 @@ class MinimaxBot(Agent):
         # self._compute_opp_pawn_attacks(board)
         for move in board.legal_moves:
             score = self._score_move(board, move)
+            # score = move_order.score_move(board, move)
             move_score_lst.append((move, score))
         move_score_lst.sort(key=lambda x: x[1], reverse=True)
         return [tup[0] for tup in move_score_lst]

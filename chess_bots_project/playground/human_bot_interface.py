@@ -4,6 +4,7 @@ from agents.human_agent import HumanAgent
 from agents.random_bot import (RandomBot)
 from agents.stockfish import StockfishBot
 from agents.minimax_bot import MinimaxBot
+from agents.mtcs_bot import MonteCarloBot
 from .game import ChessGame
 import chess
 import sys
@@ -20,6 +21,8 @@ class HumanBotInterface:
             self._bot = StockfishBot()
         elif bot == "minimax" or bot == "conventional":
             self._bot = MinimaxBot()
+        elif bot == "mtcs" or bot == "mtcs_bot":
+            self._bot = MonteCarloBot()
         if human == chess.WHITE:
             self._white = HumanAgent()
             self._black = self._bot

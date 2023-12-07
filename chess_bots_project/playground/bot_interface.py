@@ -4,6 +4,7 @@ import chess
 from playground.game import ChessGame
 import playground.special_positions as FENS
 from agents.minimax_bot import MinimaxBot
+from agents.mtcs_bot import MonteCarloBot
 import chess.pgn
 import datetime
 
@@ -11,7 +12,7 @@ import datetime
 class BotInterface:
     def __init__(self, fen=FENS.STARTING_FEN, file_path=""):
         self._game = ChessGame(fen)
-        self._white = MinimaxBot(name="White")
+        self._white = MonteCarloBot(name="White")
         self._black = MinimaxBot(name="Black")
         self._ply_cnt = 0
         self._file_path = file_path

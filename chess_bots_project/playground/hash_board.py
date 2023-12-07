@@ -143,6 +143,9 @@ class HashBoard:
     def ply(self):
         return self._board.ply()
 
+    def legal_moves(self):
+        return self._board.legal_moves
+
     """
     Printing Functions
     """
